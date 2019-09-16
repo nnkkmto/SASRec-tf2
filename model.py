@@ -169,7 +169,7 @@ def sasrec(item_num: int, seq_max_len: int, num_blocks: int = 2, embedding_dim: 
         # masking
         seq_attention *= mask
 
-    # 実装ではここで再度layer_normalizationしているが、必要ない気がするのでコメントアウト
+    # 実装ではここで再度layer_normalizationしているが、必要ない気がする
     seq_attention = layer_normalization(seq_attention)
 
     # --- PREDICTION LAYER ---
@@ -183,6 +183,7 @@ def sasrec(item_num: int, seq_max_len: int, num_blocks: int = 2, embedding_dim: 
     # candidate_ids = tf.range(start=1, limit=item_num+1)
     # candidate_emb = item_embedding_layer(all_item_ids)
 
+    # ユーザーの行動系列のembeddingとitemのembeddingを掛け合わせることでユーザーのimplicitな評価値を得る
     output = tf.reduce_sum(candidate_emb * seq_emb, -1)
     output = tf.keras.layers.Dense(1, activation='sigmoid')(output)
 
