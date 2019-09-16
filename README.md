@@ -21,7 +21,7 @@ Instacartの購買データセット
 
 上記urlからデータセットをダウンロード
 
-data/unpacked 以下に配置
+data/packed 以下に配置
 
 `python instacart_preprocess.py`
 
