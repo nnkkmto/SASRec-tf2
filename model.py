@@ -6,8 +6,9 @@ import tensorflow as tf
 def build_input(seq_max_len: int):
 
     input_seq = tf.keras.layers.Input(shape=(seq_max_len,), name='input_seq')
+    candidate = tf.keras.layers.Input(shape=(seq_max_len,), name='candidate')
 
-    return input_seq
+    return [input_seq, candidate]
 
 
 def build_embedding_layer(item_num: int, seq_max_len: int, embedding_dim: int, l2_reg: float):
@@ -127,7 +128,10 @@ def point_wise_feed_forward(input_seq, dropout_rate: float, conv_dims: list):
 def sasrec(item_num: int, seq_max_len: int, num_blocks: int = 2, embedding_dim: int = 100, attention_dim: int = 100,
            attention_num_heads: int = 1, conv_dims: list = [100, 100], dropout_rate: float = 0.5, l2_reg: float = 0.0):
 
-    input_seq = build_input(seq_max_len)
+    inputs = build_input(seq_max_len)
+    input_seq = inputs[0]
+    candidate = inputs[1]
+
     # FIXME 確認必要
     mask = tf.expand_dims(tf.to_float(tf.not_equal(input_seq, 0)), -1)
 
@@ -166,9 +170,26 @@ def sasrec(item_num: int, seq_max_len: int, num_blocks: int = 2, embedding_dim: 
         seq_attention *= mask
 
     # 実装ではここで再度layer_normalizationしているが、必要ない気がするのでコメントアウト
-    # seq_attention = layer_normalization(seq_attention)
+    seq_attention = layer_normalization(seq_attention)
 
     # --- PREDICTION LAYER ---
+    # user's sequence embedding
+    seq_emb = tf.reshape(seq_attention, [tf.shape(input_seq)[0] * seq_max_len, embedding_dim])
+    # shared item embedding (for candidate item)
+    candidate_emb = item_embedding_layer(candidate)
+
+    # 以下のように変更すれば他クラス問題に変更可能（のはず）
+    # shared item embedding (for all items)
+    # candidate_ids = tf.range(start=1, limit=item_num+1)
+    # candidate_emb = item_embedding_layer(all_item_ids)
+
+    output = tf.reduce_sum(candidate_emb * seq_emb, -1)
+    output = tf.keras.layers.Dense(1, activation='sigmoid')(output)
+
+    model = tf.keras.Model(inputs=inputs, outputs=output)
+
+    return model
+
 
 
 
