@@ -1,3 +1,7 @@
+data/packed/*.gz
+data/unpacked/*.tsv
+data/unpacked/instacart_2017_05_01/*.csv
+
 .DS_Store
 
 #Pycharm

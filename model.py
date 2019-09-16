@@ -133,7 +133,7 @@ def sasrec(item_num: int, seq_max_len: int, num_blocks: int = 2, embedding_dim: 
     candidate = inputs[1]
 
     # FIXME 確認必要
-    mask = tf.expand_dims(tf.to_float(tf.not_equal(input_seq, 0)), -1)
+    mask = tf.expand_dims(tf.cast(tf.not_equal(input_seq, 0), tf.float32), -1)
 
     # --- EMBEDDING LAYER ---
     item_embedding_layer, positional_embedding_layer = build_embedding_layer(
